@@ -2,6 +2,8 @@
 如何将自定义的算法安装为内置的 Tuner，Assessor 和 Advisor
 =======================================================================================
 
+.. contents::
+
 概述
 --------
 
@@ -72,7 +74,7 @@ NNI 提供了 ``ClassArgsValidator`` 接口，自定义的算法可用它来验�
 * 在包目录中运行 ``python setup.py develop``，此命令会在开发者模式下安装包。如果算法正在开发中，推荐使用此命令。
 * 在包目录中运行 ``python setup.py bdist_wheel`` 命令，会构建 whl 文件。 可通过 ``pip3 install sklearn`` 命令来安装。
 
-4. 准备安装源
+4. 准备源文件
 ^^^^^^^^^^^^^^^^^^^^
 
 使用以下关键词创建 YAML 文件：
@@ -92,7 +94,7 @@ YAML 文件示例：
    className: demo_tuner.DemoTuner
    classArgsValidator: demo_tuner.MyClassArgsValidator
 
-5. 将自定义算法包安装到 NNI 中
+5. 将自定义算法包注册到 NNI 中
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 运行以下命令将自定义算法加入到 NNI 的内置算法中：
@@ -103,10 +105,10 @@ YAML 文件示例：
 
 ``<path_to_meta_file>`` 是上一节创建的 YAML 文件的路径。
 
-参考 `这里 <../Tuner/InstallCustomizedTuner.rst>`_ 获取完整示例。
+参考 `自定义 Tuner 示例 <#example-register-a-customized-tuner-as-a-builtin-tuner>`_ 获取完整示例。
 
-6. 在 Experiment 中使用安装的算法
------------------------------------------------------
+在 Experiment 中使用安装的内置算法
+----------------------------------------------------------------------------------------------------
 
 在自定义算法安装后，可用其它内置 Tuner、Assessor、Advisor 的方法在 Experiment 配置文件中使用，例如：
 
@@ -119,7 +121,7 @@ YAML 文件示例：
        optimize_mode: maximize
 
 使用 ``nnictl algo`` 管理内置的算法
----------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 列出已安装的包
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -160,3 +162,61 @@ YAML 文件示例：
 例如：
 
 ``nnictl algo unregister demotuner``
+
+
+将自定义算法从 v1.x 版本转到 v2.x 版本
+----------------------------------------------------------------------------------------------
+
+所有需要修改的就是删除 ``setup.py`` 中的 ``NNI Package :: tuner`` 元数据并添加在 在 4 中提到的元文件。 然后你可以参考 `将自定义的算法安装为内置的 Tuner，Assessor 或 Advisor`__ 注册你的自定义算法。
+
+示例：将自定义 Tuner 注册为内置 Tuner
+--------------------------------------------------------------------------------------------------------------
+
+You can following below steps to register a customized tuner in ``nni/examples/tuners/customized_tuner`` as a builtin tuner.
+
+Install the customized tuner package into python environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There are 2 options to install the package into python environment:
+
+Option 1: install from directory
+""""""""""""""""""""""""""""""""
+
+From ``nni/examples/tuners/customized_tuner`` directory, run:
+
+``python setup.py develop``
+
+This command will build the ``nni/examples/tuners/customized_tuner`` directory as a pip installation source.
+
+Option 2: install from whl file
+"""""""""""""""""""""""""""""""
+
+Step 1: From ``nni/examples/tuners/customized_tuner`` directory, run:
+
+``python setup.py bdist_wheel``
+
+This command build a whl file which is a pip installation source.
+
+Step 2: Run command:
+
+``pip install dist/demo_tuner-0.1-py3-none-any.whl``
+
+Register the customized tuner as builtin tuner:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Run following command:
+
+``nnictl algo register --meta meta_file.yml``
+
+Check the registered builtin algorithms
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Then run command ``nnictl algo list``\ , you should be able to see that demotuner is installed:
+
+.. code-block:: bash
+
+   +-----------------+------------+-----------+--------=-------------+------------------------------------------+
+   |      Name       |    Type    |   source  |      Class Name      |               Module Name                |
+   +-----------------+------------+-----------+----------------------+------------------------------------------+
+   | demotuner       | tuners     |    User   | DemoTuner            | demo_tuner                               |
+   +-----------------+------------+-----------+----------------------+------------------------------------------+
